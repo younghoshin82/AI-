@@ -21,16 +21,10 @@ reports = {p.dir_name: rule_engine.evaluate(p.dir_name) for p in projects}
 # 상단 지표 카드
 # ----------------------------------------------------------------------
 grades = [report.worst_grade for report in reports.values()]
+grade_counts = {grade: grades.count(grade) for grade in config.GRADE_ORDER}
 
-cols = st.columns(5)
-cols[0].metric("전체 투자건", f"{len(projects)}건")
-for col, grade in zip(
-    cols[1:],
-    [config.GRADE_HIGH, config.GRADE_CAUTION, config.GRADE_CHECK, config.GRADE_NORMAL],
-):
-    col.metric(grade, f"{grades.count(grade)}건")
-
-st.markdown("**등급 범례**")
+st.markdown("**투자건별 최고 위험등급 현황**")
+components.grade_metric_row(grade_counts, total_label="전체 투자건", total=len(projects))
 components.grade_legend()
 
 st.divider()
@@ -67,13 +61,30 @@ event = st.dataframe(
     key="dashboard_table",
 )
 
-rows = event.selection["rows"] if event and "selection" in event else []
-if rows and options[rows[0]] != st.session_state.get("selected_project"):
-    st.session_state["selected_project"] = options[rows[0]]
-    st.session_state.pop("project_selectbox", None)
-    st.rerun()
+# 표 ↔ 사이드바 양방향 동기화
+# - 표에서 새 행을 클릭하면 사이드바 selectbox 와 세션 상태를 그 투자건으로 맞춘다.
+# - 사이드바에서 다른 투자건을 고르면 표에 남아 있는 이전 행 선택 표시를 해제한다.
+rows = components.selected_rows(event)
+current = st.session_state.get("selected_project")
+last_row = st.session_state.get("dashboard_last_row")
 
-st.caption("표의 행을 클릭하면 해당 투자건이 선택되고 모든 화면에 반영됩니다.")
+if rows:
+    row = rows[0]
+    if row != last_row:  # 표에서 방금 클릭한 경우
+        st.session_state["dashboard_last_row"] = row
+        if components.sync_selected_project(options[row]):
+            st.rerun()
+    elif options[row] != current:  # 사이드바에서 바뀐 경우
+        st.session_state.pop("dashboard_table", None)
+        st.session_state["dashboard_last_row"] = None
+        st.rerun()
+else:
+    st.session_state["dashboard_last_row"] = None
+
+st.caption(
+    "표의 행을 클릭하면 해당 투자건이 선택되고, 좌측 사이드바의 투자건 선택과 "
+    "모든 화면에 함께 반영됩니다."
+)
 
 # ----------------------------------------------------------------------
 # 선택된 투자건 요약

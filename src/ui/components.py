@@ -61,6 +61,70 @@ def rule_header(rule_id: str, name: str, grade: str, criteria: str) -> None:
     )
 
 
+def grade_metric_row(counts: dict[str, int], total_label: str | None = None, total: int = 0) -> None:
+    """4개 검증 등급 건수를 가로 한 줄에 균등 배치한다.
+
+    st.columns 는 내용 길이에 따라 카드 폭이 흔들려 마지막 항목이 잘려 보이므로,
+    CSS Grid 로 같은 너비의 카드를 만들어 배치한다. 좁은 화면에서는 자동 줄바꿈된다.
+    """
+    cards = []
+    if total_label is not None:
+        cards.append(
+            f"""<div style="flex:1 1 0;min-width:130px;border:1px solid #E0E0E0;border-radius:10px;
+                 padding:12px 14px;background:#FAFAFA;">
+              <div style="font-size:0.82rem;color:#555;margin-bottom:6px;">{total_label}</div>
+              <div style="font-size:1.7rem;font-weight:700;line-height:1.9rem;">{total}
+                <span style="font-size:0.9rem;font-weight:400;color:#555;">건</span></div>
+            </div>"""
+        )
+
+    for grade in (config.GRADE_HIGH, config.GRADE_CAUTION, config.GRADE_CHECK, config.GRADE_NORMAL):
+        count = counts.get(grade, 0)
+        color = grade_color(grade)
+        dim = "" if count else "opacity:0.55;"
+        cards.append(
+            f"""<div style="flex:1 1 0;min-width:130px;border:1px solid #E0E0E0;border-top:3px solid {color};
+                 border-radius:10px;padding:12px 14px;{dim}">
+              <div style="margin-bottom:6px;">{grade_badge(grade)}</div>
+              <div style="font-size:1.7rem;font-weight:700;line-height:1.9rem;color:{color};">{count}
+                <span style="font-size:0.9rem;font-weight:400;color:#555;">건</span></div>
+            </div>"""
+        )
+
+    st.markdown(
+        f"""<div {NO_TRANSLATE} style="display:flex;flex-wrap:wrap;gap:12px;margin:4px 0 12px 0;">
+          {"".join(cards)}
+        </div>""",
+        unsafe_allow_html=True,
+    )
+
+
+def sync_selected_project(dir_name: str | None) -> bool:
+    """선택된 투자건을 세션 상태에 반영한다.
+
+    사이드바 selectbox 는 위젯 키(`project_selectbox`)에 저장된 값을 우선하므로,
+    표에서 다른 투자건을 고른 경우 해당 위젯 키를 지워 다음 실행에서 새 값으로
+    다시 만들어지게 한다. 값이 실제로 바뀌었을 때만 True 를 돌려준다.
+    """
+    if not dir_name or dir_name == st.session_state.get("selected_project"):
+        return False
+
+    st.session_state["selected_project"] = dir_name
+    st.session_state.pop("project_selectbox", None)
+    return True
+
+
+def selected_rows(event) -> list[int]:
+    """st.dataframe(on_select=...) 반환값에서 선택된 행 번호를 꺼낸다."""
+    selection = getattr(event, "selection", None)
+    if selection is None and isinstance(event, dict):
+        selection = event.get("selection")
+    if not selection:
+        return []
+    rows = selection["rows"] if "rows" in selection else getattr(selection, "rows", [])
+    return list(rows or [])
+
+
 def grade_legend() -> None:
     """등급 색상 범례"""
     chips = " ".join(

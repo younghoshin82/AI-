@@ -27,18 +27,11 @@ st.markdown(
 # ----------------------------------------------------------------------
 # 등급 종합
 # ----------------------------------------------------------------------
-cols = st.columns(4)
-for col, grade in zip(
-    cols,
-    [config.GRADE_HIGH, config.GRADE_CAUTION, config.GRADE_CHECK, config.GRADE_NORMAL],
-):
-    with col:
-        st.markdown(components.grade_badge(grade), unsafe_allow_html=True)
-        st.markdown(
-            f"<div style='font-size:1.6rem;font-weight:700;line-height:1.8rem;'>"
-            f"{report.count_of(grade)}<span style='font-size:0.9rem;font-weight:400;'> 건</span></div>",
-            unsafe_allow_html=True,
-        )
+components.grade_metric_row(
+    {grade: report.count_of(grade) for grade in config.GRADE_ORDER},
+    total_label="적용 룰",
+    total=len(report.results),
+)
 
 st.divider()
 
