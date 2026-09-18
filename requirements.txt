@@ -1,0 +1,26 @@
+# AI 기반 투자계획서 검증 시스템 - Python 의존 패키지
+#
+# 로컬 실행:  pip install -r requirements.txt  →  streamlit run app.py
+# Streamlit Cloud: 이 파일을 자동으로 설치합니다. 시스템 패키지는 packages.txt 를 참고하세요.
+#
+# 검증 환경: Python 3.14.6 / Windows 11 (괄호 안은 검증에 사용한 버전)
+# Streamlit Cloud 는 Python 3.11~3.13 을 사용하며, 아래 버전 범위로 동일하게 동작합니다.
+
+# UI - Streamlit 멀티페이지(st.navigation), 등급 배지, 표 렌더링  (1.58.0)
+streamlit>=1.36
+
+# 표 데이터 처리 및 st.dataframe 렌더링  (3.0.3)
+pandas>=2.0
+
+# 엑셀 파싱 - 경제성검토 / 투자비내역 / 기대효과산출, 시트·셀 주소 추적  (3.1.5)
+openpyxl>=3.1
+
+# PDF 파싱 - 투자계획서 텍스트 추출, 페이지 단위 출처 기록  (0.11.10)
+pdfplumber>=0.11
+
+# Claude API - 리스크·추가확인사항·질문사항·코멘트 생성
+# (자격 증명이 없으면 호출하지 않고 규칙 기반 템플릿으로 동작)  (1.6.0)
+anthropic>=1.6
+
+# PDF 내보내기 - 투자검토요약 초안, 한글 TrueType 폰트 임베딩  (5.0.1)
+reportlab>=4.0
