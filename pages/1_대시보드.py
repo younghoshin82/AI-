@@ -1,4 +1,4 @@
-"""1. 대시보드 - 전체 투자건 현황 (DESIGN.md 2.3)"""
+"""1. 투자계획서 검증 - 전체 투자건 현황 (DESIGN.md 2.3)"""
 
 import streamlit as st
 
@@ -9,7 +9,9 @@ from src.validators import rule_engine
 
 project = components.sidebar_project_selector()
 
-components.page_header("📊 대시보드", "등록된 투자건의 검증 현황을 한눈에 확인합니다.")
+components.page_header(
+    "📊 1. 투자계획서 검증", "등록된 투자건의 검증 현황을 한눈에 확인합니다."
+)
 
 projects = data_loader.load_projects()
 if not projects:
